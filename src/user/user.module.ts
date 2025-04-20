@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user.entity';
-import { Session } from './session.entity';
-import { VerificationToken } from './verification_token.entity';
+import { User } from './entity/user.entity';
+import { Session } from './entity/session.entity';
+import { VerificationToken } from './entity/verification_token.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Session, VerificationToken])],

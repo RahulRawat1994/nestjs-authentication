@@ -7,42 +7,36 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UpdateUserDto } from './dto/update-user.dto'
+import { UserService } from './user.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   getUsers() {
-    return this.userRepository.find();
+    return this.userService.find();
   }
 
   @Get(':id')
   getUserById(@Param('id') id: number) {
-    return this.userRepository.findOne({ where: { id } });
+    return this.userService.findById(id);
   }
 
   @Post()
-  createUser(@Body() body: Partial<User>) {
-    const user = this.userRepository.create(body);
-    return this.userRepository.save(user);
+  async createUser(@Body() body: CreateUserDto) {
+    return await this.userService.create(body);
   }
 
   @Put(':id')
   async updateUser(@Param('id') id: number, @Body() body: UpdateUserDto) {
-    await this.userRepository.update(id, body);
-    return this.userRepository.findOne({ where: { id } });
+    return this.userService.update(id, body);
   }
 
   @Delete(':id')
   deleteUser(@Param('id') id: number) {
-    return this.userRepository.delete(id);
+    return this.userService.delete(id);
   }
 }
