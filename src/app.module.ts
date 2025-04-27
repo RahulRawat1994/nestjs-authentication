@@ -15,8 +15,12 @@ import { ThrottlerModule } from '@nestjs/throttler';
       isGlobal: true,
     }),
     ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 5,
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 5,
+        },
+      ],
     }),
     TypeOrmModule.forRoot({
       type: process.env.DB_CONNECTION as 'mysql',

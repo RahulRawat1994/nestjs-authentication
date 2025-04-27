@@ -7,18 +7,24 @@ import {
   Get,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthGuard } from './auth.guard';
 import { loginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { registerDto } from './dto/register.dto';
 import { forgotPasswordDto } from './dto/forgot-password.dto';
 import { resetPasswordDto } from './dto/reset-password.dto';
+import { Throttle } from '@nestjs/throttler';
+interface CustomRequest extends Request {
+  user?: { sub: string };
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @Throttle(5, 60) // <-- Allow max 5 login attempts per 60 seconds per IP
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async login(@Body() body: loginDto, @Req() req: Request) {
     const userAgent = req.headers['user-agent'] || 'unknown';
     const ip = req.headers['x-forwarded-for']?.toString() || '0.0.0.0';
@@ -44,12 +50,23 @@ export class AuthController {
   resetPassword(@Body() body: resetPasswordDto) {
     return this.authService.resetPassword(body);
   }
-
   @UseGuards(AuthGuard)
   @Get('logout')
   logout(@Req() req: Request) {
-    const authHeader = req.headers['authorization'];
-    const [_, token] = authHeader.split(' ');
-    return this.authService.logout(token);
+    console.log('Logout request received', req);
+    try {
+      const customReq = req as CustomRequest;
+      const userId = +customReq.user?.sub;
+
+      if (!userId) {
+        throw new Error('User not found');
+      }
+      return this.authService.logout(userId);
+    } catch (error) {
+      return {
+        status: 'error',
+        message: error?.message ?? 'Logout failed',
+      };
+    }
   }
 }

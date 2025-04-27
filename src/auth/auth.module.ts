@@ -7,11 +7,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
 import { Session } from '../user/entity/session.entity';
 import { VerificationToken } from '../user/entity/verification_token.entity';
+import { AccessTokenBlacklist } from '../user/entity/access_token_blacklist';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Session, VerificationToken]),
+    TypeOrmModule.forFeature([
+      User,
+      Session,
+      VerificationToken,
+      AccessTokenBlacklist,
+    ]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'super-secret-key',
       signOptions: { expiresIn: '1h' },

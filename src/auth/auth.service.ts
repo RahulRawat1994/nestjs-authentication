@@ -285,15 +285,15 @@ export class AuthService {
       };
     }
   }
-  async logout(token: string) {
+  async logout(userId: number) {
     try {
-      if (!token) {
-        throw new Error('No token provided');
+      if (!userId) {
+        throw new Error('No user provided');
       }
 
       // Find the session by token
       const session = await this.sessionRepository.findOne({
-        where: { token },
+        where: { user: { id: userId } },
       });
 
       if (!session) {

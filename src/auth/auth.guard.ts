@@ -5,36 +5,53 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
+import { AccessTokenBlacklist } from 'src/user/entity/access_token_blacklist';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    @InjectRepository(AccessTokenBlacklist)
+    private readonly tokenBlacklistService: Repository<AccessTokenBlacklist>,
+    private readonly jwtService: JwtService,
+  ) {}
+
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromRequest(request);
 
-    const authHeader = request.headers['authorization'];
-
-    if (!authHeader) {
-      throw new UnauthorizedException('Authorization header missing');
+    if (!token) {
+      throw new UnauthorizedException('Authorization: Token not found');
     }
 
-    const [type, token] = authHeader.split(' ');
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: process.env.JWT_SECRET,
+    });
 
-    if (type !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Invalid token format');
+    if (!payload) {
+      throw new UnauthorizedException('Invalid token');
     }
 
-    try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
-      });
-
-      request['user'] = payload; // Attach the user info to request
-      return true;
-    } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
+    // Check if the token is blackliste
+    const isBlacklisted = await this.tokenBlacklistService.find({
+      where: { token },
+    });
+    if (isBlacklisted) {
+      throw new UnauthorizedException('Token is blacklisted');
     }
+
+    // update the request object with the user information
+    request['user'] = payload; 
+    return true;
   }
+
+  private extractTokenFromRequest(request: any): string {
+    const authHeader = request.headers['authorization'];
+    if (!authHeader) return null;
+    return authHeader.replace('Bearer ', '');
+  }
+
 }
