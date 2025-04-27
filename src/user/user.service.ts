@@ -4,48 +4,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { User } from './entity/user.entity';
 import { plainToInstance } from 'class-transformer';
-import * as bcrypt from 'bcryptjs';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
   private readonly SALT_ROUNDS: number = 10;
 
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
-
-  /**
-   * Hash a password using bcrypt
-   * @param password - Password to hash
-   * @returns Promise of hashed password
-   * @throws Error if hashing fails
-   */
-  private async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(this.SALT_ROUNDS);
-    try {
-      return await bcrypt.hash(password, salt);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error('Error hashing password: ' + error.message);
-      }
-      throw new Error('Error hashing password: Unknown error');
-    }
-  }
-  /**
-   * Compare a plain password with a hashed password
-   * @param password - Password to compare
-   * @param hashedPassword - Hashed password to compare against
-   * @returns 
-   */
-  private async comparePassword(
-    password: string,
-    hashedPassword: string,
-  ): Promise<boolean> {
-    return bcrypt.compare(password, hashedPassword);
-  }
+  constructor(private readonly userRepository: UserRepository) {}
 
   /**
    * Create a new user
@@ -53,7 +18,7 @@ export class UserService {
    * @returns Created user object
    */
   async create(dto: CreateUserDto): Promise<User> {
-    const hashedPassword: string = await this.hashPassword(dto.password);
+    const hashedPassword: string = await this.userRepository.hashPassword(dto.password);
     if (!hashedPassword) {
       throw new Error('Error hashing password');
     }
@@ -108,14 +73,29 @@ export class UserService {
    * @returns Array of User objects
    */
   async find(): Promise<UserResponseDto[]> {
-    return await this.userRepository.find();
+    try {
+      const users = await this.userRepository.find();
+
+      const safeUsers = plainToInstance(UserResponseDto, users, {
+        excludeExtraneousValues: true,
+      }) as UserResponseDto[];
+
+      return safeUsers;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Failed to fetch users:', error.message);
+      } else {
+        console.error('Unknown error fetching users:', error);
+      }
+      throw error;
+    }
   }
 
   /**
    * Update a user by ID
    * @param id {number} - User ID
    * @param dto {UpdateUserDto} - User data to update
-   * @returns 
+   * @returns Updated user object
    */
   async update(id: number, dto: UpdateUserDto): Promise<User> {
     // check if user exists
@@ -125,13 +105,14 @@ export class UserService {
     }
     // check if password is being updated
     if (dto.password) {
-      const hashedPassword: string = await this.hashPassword(dto.password);
+      const hashedPassword: string = await this.userRepository.hashPassword(dto.password);
       if (!hashedPassword) {
         throw new Error('Error hashing password');
       }
       (
         dto as Partial<CreateUserDto & { password_hash: string }>
       ).password_hash = hashedPassword;
+      delete dto.password;
     }
     // update user
     await this.userRepository.update(id, dto);

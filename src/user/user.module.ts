@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { Session } from './entity/session.entity';
 import { VerificationToken } from './entity/verification_token.entity';
-
+import { UserRepository } from './user.repository';
 @Module({
   imports: [TypeOrmModule.forFeature([User, Session, VerificationToken])],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UserRepository],
+  exports: [UserRepository],
 })
 export class UserModule {}
