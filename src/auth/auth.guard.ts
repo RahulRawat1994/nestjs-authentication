@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
     }
 
     // Check if the token is blackliste
-    const isBlacklisted = await this.tokenBlacklistService.find({
+    const isBlacklisted = await this.tokenBlacklistService.findOne({
       where: { token },
     });
     if (isBlacklisted) {

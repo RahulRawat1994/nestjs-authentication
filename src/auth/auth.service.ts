@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as dayjs from 'dayjs';
 import { UserRepository } from '../user/user.repository';
 import { MailService } from '../mail/mail.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly verificationTokenRepository: Repository<VerificationToken>,
     private readonly jwtService: JwtService,
     private readonly userRepository: UserRepository,
+    private readonly userService: UserService,
     private readonly mailService: MailService,
   ) {}
 
@@ -312,5 +314,17 @@ export class AuthService {
         message: error?.message ?? 'Logout failed',
       };
     }
+  }
+
+  async getProfile(userId: number) { 
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return {
+      status: 'success',
+      message: 'User profile retrieved successfully',
+      user,
+    };
   }
 }

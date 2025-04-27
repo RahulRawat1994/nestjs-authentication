@@ -6,6 +6,8 @@ import {
   Param,
   Get,
   UseGuards,
+  HttpCode,
+  HttpStatus
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from './auth.guard';
@@ -23,6 +25,7 @@ interface CustomRequest extends Request {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @HttpCode(HttpStatus.OK)
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async login(@Body() body: loginDto, @Req() req: Request) {
@@ -41,15 +44,18 @@ export class AuthController {
     return this.authService.verifyEmail(id, token);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
   forgotPassword(@Body() body: forgotPasswordDto) {
     return this.authService.forgotPassword(body);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('reset-password')
   resetPassword(@Body() body: resetPasswordDto) {
     return this.authService.resetPassword(body);
   }
+
   @UseGuards(AuthGuard)
   @Get('logout')
   logout(@Req() req: Request) {
@@ -68,5 +74,13 @@ export class AuthController {
         message: error?.message ?? 'Logout failed',
       };
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('profile')
+  getProfile(@Req() req: Request) {
+    const user = (req as CustomRequest).user;
+
+    return this.authService.getProfile(user?.sub as unknown as number);
   }
 }
