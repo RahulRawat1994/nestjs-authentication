@@ -3,14 +3,22 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsOptional,
 } from 'class-validator';
 
 export class loginDto {
-  @IsNotEmpty() @MinLength(3) @MaxLength(20) @Matches(/^[a-zA-Z0-9]+$/, {
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(20)
+  @Matches(/^[a-zA-Z0-9]+$/, {
     message: 'username can only contain letters and numbers',
-  }) username: string;
+  })
+  username: string;
 
   @IsNotEmpty()
   @MaxLength(100)
   password: string;
+
+  @IsOptional()
+  rememberMe?: boolean;
 }

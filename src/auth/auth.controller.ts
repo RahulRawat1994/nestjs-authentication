@@ -7,7 +7,8 @@ import {
   Get,
   UseGuards,
   HttpCode,
-  HttpStatus
+  HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from './auth.guard';
@@ -106,4 +107,26 @@ export class AuthController {
 
     return this.authService.getProfile(user?.sub as unknown as number);
   }
+
+  @UseGuards(AuthGuard)
+  @Post('deactivate')
+  deactivateAccount(@Req() req: CustomRequest) {
+    const userId = req.user?.id;
+    return this.authService.deactivate(userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('delete-account')
+  async deleteAccount(@Req() req: CustomRequest) {
+    const userId = req.user?.id;
+    return this.authService.deleteAccount(userId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('restore-account')
+  async restoreAccount(@Req() req: CustomRequest) {
+    const userId = req.user.id;
+    return this.accountService.restoreAccount(userId);
+  }
+
 }

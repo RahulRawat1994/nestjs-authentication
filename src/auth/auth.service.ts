@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Session } from '../user/entity/session.entity';
 import { VerificationToken } from '../user/entity/verification_token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +16,7 @@ import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
+  [x: string]: any;
   constructor(
     @InjectRepository(Session)
     private readonly sessionRepository: Repository<Session>,
@@ -30,7 +31,7 @@ export class AuthService {
   async login(dto: loginDto, userAgent: string, ip: string) {
     try {
       const user = await this.userRepository.findOne({
-        where: [{ username: dto?.username, is_active: true }],
+        where: [{ username: dto?.username, is_active: true, deleted_at: null }],
       });
 
       if (!user) {
@@ -49,11 +50,22 @@ export class AuthService {
 
       // Generate JWT token or session here
       const payload = { sub: user.id, username: user.username };
+
+      // Set token expiration based on rememberMe
+      const accessTokenExpiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN || '15m'; // Access token short-lived always
+      const refreshTokenExpiresIn =
+        (dto.rememberMe
+          ? process.env.REFRESH_TOKEN_EXPIRES_IN
+          : process.env.REFRESH_TOKEN_LONG_LIVED) || 30; // Refresh token long-lived
+
       const accessToken = this.jwtService.sign(payload, {
         secret: process.env.JWT_SECRET,
+        expiresIn: accessTokenExpiresIn,
       });
       const refreshToken = uuidv4(); // UUID for refresh token
-      const expiresAt = dayjs().add(30, 'days').toDate(); // 30 days expiry
+      const expiresAt = dayjs()
+        .add(Number(refreshTokenExpiresIn), 'days')
+        .toDate(); // 30 days expiry
 
       // Save session
       const session = this.sessionRepository.create({
@@ -406,5 +418,60 @@ export class AuthService {
         message: error?.message ?? 'An error occurred during token refresh',
       };
     }
+  }
+
+  async deactivateAccount(userId: number) {
+    try {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Deactivate the user
+      user.is_active = false;
+      await this.userRepository.save(user);
+      await this.logoutAllDevices(userId); // Log out from all devices
+
+      return {
+        status: 'success',
+        message: 'Account deactivated successfully',
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        message:
+          error?.message ?? 'An error occurred during account deactivation',
+      };
+    }
+  }
+
+  async deleteAccount(userId: number) {
+    await this.userService.delete(userId);
+    await this.logoutAllDevices(userId); // Log out from all devices
+    return {
+      message: 'Account deletion requested. Will be deleted after 30 days.',
+    };
+  } 
+
+  async restoreAccount(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.deleted_at) {
+      throw new BadRequestException('Account is not marked for deletion.');
+    }
+
+    const thirtyDaysAgo = dayjs().subtract(30, 'days').toDate();
+
+    if (user.deleted_at < thirtyDaysAgo) {
+      throw new BadRequestException('Cannot restore. Account already scheduled for permanent deletion.');
+    }
+
+    await this.userRepository.update(userId, { deleted_at: null });
+
+    return { message: 'Account restored successfully.' };
   }
 }

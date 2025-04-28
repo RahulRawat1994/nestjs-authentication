@@ -40,4 +40,7 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  deleted_at: Date;
 }

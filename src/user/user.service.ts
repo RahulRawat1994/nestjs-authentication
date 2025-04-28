@@ -46,7 +46,8 @@ export class UserService {
     if (!user) {
       throw new Error('User not found');
     }
-    await this.userRepository.remove(user);
+    user.deleted_at = new Date();
+    await this.userRepository.save(user);
   }
 
   /**
