@@ -7,7 +7,6 @@ import { loginDto } from './dto/login.dto';
 import { registerDto } from './dto/register.dto';
 import { forgotPasswordDto } from './dto/forgot-password.dto';
 import { resetPasswordDto } from './dto/reset-password.dto';
-import { verifyEmailDto } from './dto/verify-email.dto';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import * as dayjs from 'dayjs';
@@ -287,7 +286,7 @@ export class AuthService {
       };
     }
   }
-  async logout(userId: number) {
+  async logout(userId: number, refresh_token: string) {
     try {
       if (!userId) {
         throw new Error('No user provided');
@@ -295,7 +294,7 @@ export class AuthService {
 
       // Find the session by token
       const session = await this.sessionRepository.findOne({
-        where: { user: { id: userId } },
+        where: { refresh_token, user: { id: userId } },
       });
 
       if (!session) {
@@ -316,7 +315,37 @@ export class AuthService {
     }
   }
 
-  async getProfile(userId: number) { 
+  async logoutAllDevices(userId: number) {
+    try {
+      if (!userId) {
+        throw new Error('No user provided');
+      }
+
+      // Find all sessions for the user
+      const sessions = await this.sessionRepository.find({
+        where: { user: { id: userId } },
+      });
+
+      if (sessions.length === 0) {
+        throw new Error('No active sessions found');
+      }
+
+      // Remove all sessions
+      await this.sessionRepository.remove(sessions);
+
+      return {
+        status: 'success',
+        message: 'Logged out from all devices successfully',
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        message: error?.message ?? 'Logout failed',
+      };
+    }
+  }
+
+  async getProfile(userId: number) {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new Error('User not found');

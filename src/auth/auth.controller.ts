@@ -18,7 +18,10 @@ import { forgotPasswordDto } from './dto/forgot-password.dto';
 import { resetPasswordDto } from './dto/reset-password.dto';
 import { Throttle } from '@nestjs/throttler';
 interface CustomRequest extends Request {
-  user?: { sub: string };
+  user?: {
+    id: any;
+    sub: string;
+  };
 }
 
 @Controller('auth')
@@ -68,22 +71,32 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('logout')
-  logout(@Req() req: Request) {
+  logout(@Body() body: { refresh_token: string }, @Req() req: Request) {
     console.log('Logout request received', req);
     try {
       const customReq = req as CustomRequest;
       const userId = +customReq.user?.sub;
-
+      const refreshToken = body.refresh_token;
+      if (!refreshToken) {
+        throw new Error('Refresh token not provided');
+      }
       if (!userId) {
         throw new Error('User not found');
       }
-      return this.authService.logout(userId);
+      return this.authService.logout(userId, refreshToken);
     } catch (error) {
       return {
         status: 'error',
         message: error?.message ?? 'Logout failed',
       };
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('logout-all')
+  async logoutAll(@Req() req: Request) {
+    const userId = (req as CustomRequest).user.sub as unknown as number;
+    return await this.authService.logoutAllDevices(userId);
   }
 
   @UseGuards(AuthGuard)
