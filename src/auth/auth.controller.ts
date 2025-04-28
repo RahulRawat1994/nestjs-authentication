@@ -56,6 +56,16 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh-token')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  async refreshToken(@Body() body: { refresh_token: string }, @Req() req: Request) {
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const ip = req.headers['x-forwarded-for']?.toString() || '0.0.0.0';
+
+    return await this.authService.refreshToken(body.refresh_token, userAgent, ip);
+  }
+
   @UseGuards(AuthGuard)
   @Get('logout')
   logout(@Req() req: Request) {

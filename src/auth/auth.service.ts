@@ -327,4 +327,55 @@ export class AuthService {
       user,
     };
   }
+
+  async refreshToken(refreshToken: string, userAgent: string, ip: string) {
+    try {
+      // Find the session by refresh token
+      const session = await this.sessionRepository.findOne({
+        where: { refresh_token: refreshToken },
+      });
+
+      if (!session) {
+        throw new Error('Session not found or already logged out');
+      }
+
+      // Check if the session is expired
+      if (dayjs().isAfter(dayjs(session.expires_at))) {
+        throw new Error('Session has expired');
+      }
+
+      // Generate new tokens
+      const payload = { sub: session.user.id, username: session.user.username };
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+      });
+      const newRefreshToken = uuidv4(); // UUID for new refresh token
+      const expiresAt = dayjs().add(30, 'days').toDate(); // 30 days expiry
+
+      // Update session with new refresh token and expiry
+      session.refresh_token = newRefreshToken;
+      session.expires_at = expiresAt;
+      session.user_agent = userAgent;
+      session.ip_address = ip;
+
+      await this.sessionRepository.save(session);
+
+      return {
+        status: 'success',
+        message: 'Tokens refreshed successfully',
+        accessToken,
+        refreshToken: newRefreshToken,
+        user: {
+          id: session.user.id,
+          username: session.user.username,
+          email: session.user.email,
+        },
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        message: error?.message ?? 'An error occurred during token refresh',
+      };
+    }
+  }
 }
