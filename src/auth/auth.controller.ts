@@ -11,7 +11,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthGuard } from './auth.guard';
+import { JwtGuard } from './auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { loginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { registerDto } from './dto/register.dto';
@@ -70,7 +71,7 @@ export class AuthController {
     return await this.authService.refreshToken(body.refresh_token, userAgent, ip);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @Get('logout')
   logout(@Body() body: { refresh_token: string }, @Req() req: Request) {
     console.log('Logout request received', req);
@@ -93,14 +94,14 @@ export class AuthController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @Post('logout-all')
   async logoutAll(@Req() req: Request) {
     const userId = (req as CustomRequest).user.sub as unknown as number;
     return await this.authService.logoutAllDevices(userId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @Get('profile')
   getProfile(@Req() req: Request) {
     const user = (req as CustomRequest).user;
@@ -108,25 +109,40 @@ export class AuthController {
     return this.authService.getProfile(user?.sub as unknown as number);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @Post('deactivate')
   deactivateAccount(@Req() req: CustomRequest) {
     const userId = req.user?.id;
     return this.authService.deactivate(userId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @Delete('delete-account')
   async deleteAccount(@Req() req: CustomRequest) {
     const userId = req.user?.id;
     return this.authService.deleteAccount(userId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @Post('restore-account')
   async restoreAccount(@Req() req: CustomRequest) {
     const userId = req.user.id;
-    return this.accountService.restoreAccount(userId);
+    return this.authService.restoreAccount(userId);
+  }
+
+
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // Redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleAuthRedirect(@Req() req) {
+    // Handle the response after Google login
+    return this.authService.loginWithGoogle(req.user);
   }
 
 }

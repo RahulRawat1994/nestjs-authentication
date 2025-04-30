@@ -12,6 +12,10 @@ export class UserService {
 
   constructor(private readonly userRepository: UserRepository) {}
 
+  // Find user by email
+  async findByEmail(email: string): Promise<User> {
+    return this.userRepository.findOne({ where: { email } });
+  }
   /**
    * Create a new user
    * @param dto - User data

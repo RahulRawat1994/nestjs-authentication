@@ -474,4 +474,13 @@ export class AuthService {
 
     return { message: 'Account restored successfully.' };
   }
+
+  loginWithGoogle(user: any) {
+    const payload = { email: user.email, sub: user.id };
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
+    const refreshToken = uuid(); // or sign a refresh token too
+    return { accessToken, refreshToken };
+  }
 }

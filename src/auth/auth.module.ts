@@ -2,6 +2,8 @@
 import { Injectable, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from './google.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entity/user.entity';
@@ -10,6 +12,7 @@ import { VerificationToken } from '../user/entity/verification_token.entity';
 import { AccessTokenBlacklist } from '../user/entity/access_token_blacklist';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -24,9 +27,10 @@ import { MailModule } from '../mail/mail.module';
     }),
     UserModule,
     MailModule,
+    PassportModule
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

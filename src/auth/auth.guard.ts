@@ -11,7 +11,7 @@ import { AccessTokenBlacklist } from 'src/user/entity/access_token_blacklist';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class JwtGuard implements CanActivate {
   constructor(
     @InjectRepository(AccessTokenBlacklist)
     private readonly tokenBlacklistService: Repository<AccessTokenBlacklist>,

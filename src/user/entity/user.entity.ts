@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Session } from './session.entity';
 import { VerificationToken } from './verification_token.entity';
-
+import { SocialAccount } from './social_account.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -20,8 +20,11 @@ export class User {
   @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   email: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   password_hash: string;
+
+  @Column({ nullable: true })
+  avatar: string;
 
   @Column({ default: true })
   is_active: boolean;
@@ -31,6 +34,10 @@ export class User {
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
+
+  // One-to-many relation with social accounts (see next section)
+  @OneToMany(() => SocialAccount, (social) => social.user)
+  socialAccounts: SocialAccount[];
 
   @OneToMany(() => VerificationToken, (token) => token.user)
   verification_tokens: VerificationToken[];
