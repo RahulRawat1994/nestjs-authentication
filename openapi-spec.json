@@ -1,0 +1,616 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/loginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/registerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/verify-email/{id}/{token}": {
+      "get": {
+        "operationId": "AuthController_verifyEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/forgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/resetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "operationId": "AuthController_refreshToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/logoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout-all": {
+      "post": {
+        "operationId": "AuthController_logoutAll",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "operationId": "AuthController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/deactivate": {
+      "post": {
+        "operationId": "AuthController_deactivateAccount",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/delete-account": {
+      "delete": {
+        "operationId": "AuthController_deleteAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/restore-account": {
+      "post": {
+        "operationId": "AuthController_restoreAccount",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "operationId": "AuthController_googleAuth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "operationId": "AuthController_googleAuthRedirect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/user": {
+      "get": {
+        "operationId": "UserController_getUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      },
+      "post": {
+        "operationId": "UserController_createUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "operationId": "UserController_getUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      },
+      "put": {
+        "operationId": "UserController_updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_deleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "NestJS Authentication API",
+    "description": "This is a secure and modular authentication API built with NestJS. It provides endpoints for user registration, login, email verification, password reset, OAuth (Google), and account management.\n\n      Key Features:\n      - JWT-based authentication and token refresh\n      - Email verification and password recovery flows\n      - Social login support (Google)\n      - User profile and account management\n      - Built with modular controllers and DTO validation\n\n      Use the Authorize button to test secured routes with a valid JWT token.\n      ",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "loginDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Username for login",
+            "example": "john_doe"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for login",
+            "example": "P@ssw0rd123"
+          },
+          "rememberMe": {
+            "type": "boolean",
+            "description": "Remember me option",
+            "example": true
+          }
+        },
+        "required": [
+          "username",
+          "password",
+          "rememberMe"
+        ]
+      },
+      "registerDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Username for registration",
+            "example": "johndoe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address for registration",
+            "example": "test@exmaple.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for registration",
+            "example": "P@ssw0rd123"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password"
+        ]
+      },
+      "forgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address for password reset",
+            "example": "test@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "resetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "number",
+            "description": "User ID for password reset",
+            "example": 1
+          },
+          "token": {
+            "type": "string",
+            "description": "Password reset token",
+            "example": "abc123xyz456"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password for the user",
+            "example": "P@ssw0rd123"
+          }
+        },
+        "required": [
+          "userId",
+          "token",
+          "newPassword"
+        ]
+      },
+      "logoutDto": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh token for logout",
+            "example": "22klj35khk2gasjhgjkhgk2j3h4g"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Username for the user",
+            "example": "johndoe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address for the user",
+            "example": "test@yopmail.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for the user",
+            "example": "P@ssw0rd123"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL for the user",
+            "example": "https://example.com/avatar.jpg"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Provider for the user",
+            "example": "google"
+          },
+          "isVerified": {
+            "type": "boolean",
+            "description": "Is the user verified?",
+            "example": true
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password",
+          "avatar",
+          "provider",
+          "isVerified"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Username of the user",
+            "example": "johndoe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the user",
+            "example": "test@yopamil.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "Avatar URL of the user",
+            "example": "https://example.com/avatar.jpg"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Indicates if the user is active",
+            "example": true
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "Indicates if the user is verified",
+            "example": true
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password",
+          "is_active",
+          "is_verified"
+        ]
+      }
+    }
+  }
+}

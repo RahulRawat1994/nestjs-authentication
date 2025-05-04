@@ -33,7 +33,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         username: name.givenName,
         avatar: photos[0]?.value,
         provider: 'google',
-        isVerified: true, // Assuming social logins are automatically verified
+        isVerified: true,
       });
     }
 
@@ -43,7 +43,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     if (!socialAccount) {
       // If no social account exists, link it
       socialAccount = await this.socialAccountService.create({
-        userId: user.id,
+        user: user,
         provider: 'google',
         providerId: profile.id,
         avatar: photos[0]?.value,

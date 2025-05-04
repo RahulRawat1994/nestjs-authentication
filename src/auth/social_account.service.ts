@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { SocialAccount } from 'src/user/entity/social_account.entity';
 
 @Injectable()
@@ -15,9 +16,15 @@ export class SocialAccountService {
     return this.socialAccountRepository.findOne({ where: { provider, providerId } });
   }
 
-  // Create a new social account link
-  async create(createSocialAccountDto: any): Promise<SocialAccount> {
-    const socialAccount = this.socialAccountRepository.create(createSocialAccountDto);
+  async create(
+    createSocialAccountDto: DeepPartial<SocialAccount>,
+  ): Promise<SocialAccount> {
+    const socialAccount = this.socialAccountRepository.create({
+      ...createSocialAccountDto,
+    });
+    if (Array.isArray(socialAccount)) {
+      throw new Error('Expected a single SocialAccount, but received an array.');
+    }
     return this.socialAccountRepository.save(socialAccount);
   }
 }

@@ -9,16 +9,19 @@ import {
   HttpCode,
   HttpStatus,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtGuard } from './auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { loginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { registerDto } from './dto/register.dto';
 import { forgotPasswordDto } from './dto/forgot-password.dto';
 import { resetPasswordDto } from './dto/reset-password.dto';
 import { Throttle } from '@nestjs/throttler';
+import { logoutDto } from './dto/logout.dto';
 interface CustomRequest extends Request {
   user?: {
     id: any;
@@ -39,9 +42,10 @@ export class AuthController {
     return await this.authService.login(body, userAgent, ip);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('register')
-  register(@Body() body: registerDto) {
-    return this.authService.register(body);
+  async register(@Body() body: registerDto) {
+    return await this.authService.register(body);
   }
 
   @Get('verify-email/:id/:token')
@@ -62,6 +66,8 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtGuard)
+  @ApiBearerAuth('access-token')
   @Post('refresh-token')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async refreshToken(@Body() body: { refresh_token: string }, @Req() req: Request) {
@@ -71,19 +77,20 @@ export class AuthController {
     return await this.authService.refreshToken(body.refresh_token, userAgent, ip);
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtGuard)
-  @Get('logout')
-  logout(@Body() body: { refresh_token: string }, @Req() req: Request) {
+  @Post('logout')
+  logout(@Body() body: logoutDto, @Req() req: Request) {
     console.log('Logout request received', req);
     try {
       const customReq = req as CustomRequest;
       const userId = +customReq.user?.sub;
       const refreshToken = body.refresh_token;
       if (!refreshToken) {
-        throw new Error('Refresh token not provided');
+        throw new BadRequestException('Refresh token not provided');
       }
       if (!userId) {
-        throw new Error('User not found');
+        throw new BadRequestException('User not found');
       }
       return this.authService.logout(userId, refreshToken);
     } catch (error) {
@@ -94,6 +101,7 @@ export class AuthController {
     }
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtGuard)
   @Post('logout-all')
   async logoutAll(@Req() req: Request) {
@@ -101,6 +109,7 @@ export class AuthController {
     return await this.authService.logoutAllDevices(userId);
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtGuard)
   @Get('profile')
   getProfile(@Req() req: Request) {
@@ -109,28 +118,32 @@ export class AuthController {
     return this.authService.getProfile(user?.sub as unknown as number);
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtGuard)
   @Post('deactivate')
-  deactivateAccount(@Req() req: CustomRequest) {
-    const userId = req.user?.id;
-    return this.authService.deactivate(userId);
+  deactivateAccount(@Req() req: Request) {
+    const user = (req as CustomRequest).user;
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return this.authService.deactivateAccount(user?.sub as unknown as number);
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtGuard)
   @Delete('delete-account')
   async deleteAccount(@Req() req: CustomRequest) {
-    const userId = req.user?.id;
+    const userId = req.user?.sub as unknown as number;
     return this.authService.deleteAccount(userId);
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtGuard)
   @Post('restore-account')
   async restoreAccount(@Req() req: CustomRequest) {
     const userId = req.user.id;
     return this.authService.restoreAccount(userId);
   }
-
-
 
   @Get('google')
   @UseGuards(AuthGuard('google'))

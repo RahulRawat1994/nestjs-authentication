@@ -12,6 +12,9 @@ import { VerificationToken } from '../user/entity/verification_token.entity';
 import { AccessTokenBlacklist } from '../user/entity/access_token_blacklist';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
+import { UserService } from 'src/user/user.service';
+import { SocialAccountService } from './social_account.service';
+import { SocialAccount } from 'src/user/entity/social_account.entity';
 
 @Module({
   imports: [
@@ -20,17 +23,17 @@ import { MailModule } from '../mail/mail.module';
       Session,
       VerificationToken,
       AccessTokenBlacklist,
+      SocialAccount,
     ]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'super-secret-key',
-      signOptions: { expiresIn: '1h' },
     }),
     UserModule,
     MailModule,
-    PassportModule
+    PassportModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
+  providers: [AuthService, GoogleStrategy, SocialAccountService],
   exports: [AuthService],
 })
 export class AuthModule {}

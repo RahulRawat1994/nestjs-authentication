@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
-import { MailController } from './mail.controller';
 
 @Module({
   imports: [
@@ -33,7 +32,7 @@ import { MailController } from './mail.controller';
       }),
     }),
   ],
-  controllers: [MailController],
+  controllers: [],
   providers: [MailService],
   exports: [MailService],
 })
