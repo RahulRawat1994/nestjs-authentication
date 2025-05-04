@@ -425,7 +425,9 @@ export class AuthService {
     const thirtyDaysAgo = dayjs().subtract(30, 'days').toDate();
 
     if (user.deleted_at < thirtyDaysAgo) {
-      throw new BadRequestException('Cannot restore. Account already scheduled for permanent deletion.');
+      throw new BadRequestException(
+        'Cannot restore. Account already scheduled for permanent deletion.',
+      );
     }
 
     await this.userRepository.update(userId, { deleted_at: null });
