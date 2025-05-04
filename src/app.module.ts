@@ -6,7 +6,7 @@ import { UserModule } from './user/user.module';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     AuthModule,
@@ -21,6 +21,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: process.env.DB_CONNECTION as 'mysql',
       host: process.env.DB_HOST,
