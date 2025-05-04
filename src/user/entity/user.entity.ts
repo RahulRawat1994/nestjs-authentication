@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  JoinTable,
 } from 'typeorm';
 import { Session } from './session.entity';
 import { VerificationToken } from './verification_token.entity';
 import { SocialAccount } from './social_account.entity';
+import { Role } from './role.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -41,6 +43,9 @@ export class User {
 
   @OneToMany(() => VerificationToken, (token) => token.user)
   verification_tokens: VerificationToken[];
+
+  @JoinTable()
+  roles: Role[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
